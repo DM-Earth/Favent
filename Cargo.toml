@@ -5,7 +5,7 @@ edition = "2021"
 license = "GPL-3.0-or-later"
 repository = "https://github.com/DM-Earth/Favent"
 description = "An event system inspired by QSL/FAPI"
-readme = "README.md"
+readme = "readme.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
