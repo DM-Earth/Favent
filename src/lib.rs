@@ -34,7 +34,6 @@ mod tests {
                 ActionResult::PASS => continue,
                 _ => (),
             }
-
             return result;
         }
         ActionResult::PASS

@@ -35,7 +35,10 @@ impl<I, O> Event<I, O> {
         O: Default,
     {
         Self {
-            phases: Vec::new(),
+            phases: vec![self::phase::PhaseData {
+                id: self::phase::default_phase(),
+                callbacks: Vec::new(),
+            }],
             invoker,
             default_impl: Box::new(|_i| O::default()),
         }
