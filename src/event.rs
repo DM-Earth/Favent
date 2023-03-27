@@ -1,4 +1,4 @@
-use crate::Identifier;
+use self::phase::{Identifier, PhaseData};
 
 pub struct Event<I, O> {
     phases: Vec<PhaseData<I, O>>,
@@ -13,7 +13,7 @@ impl<I, O> Event<I, O> {
         C: Fn(I) -> O + 'static,
     {
         if phases.is_empty() {
-            phases.push(default_phase());
+            phases.push(self::phase::default_phase());
         }
 
         Self {
@@ -75,49 +75,59 @@ impl<I, O> Event<I, O> {
     where
         T: Fn(I) -> O + 'static,
     {
-        self.register(callback, &default_phase())
+        self.register(callback, &self::phase::default_phase())
     }
-    
+
     pub fn get_phases(&self) -> Vec<Identifier> {
         self.phases.iter().map(|p| p.id.to_owned()).collect()
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug)]
-pub enum ActionResult {
-    PASS,
-    FAIL,
-    SUCCESS,
-}
+pub mod phase {
+    use std::fmt::Debug;
 
-impl ActionResult {
-    pub fn should_cancel(&self) -> bool {
-        match self {
-            Self::PASS => false,
-            _ => true,
+    #[derive(Debug, PartialEq, Clone)]
+    pub struct Identifier {
+        namespace: String,
+        path: String,
+    }
+
+    impl Identifier {
+        pub const NAMESPACE_SEPARATOR: char = ':';
+
+        pub fn new(namespace: &str, path: &str) -> Self {
+            Self {
+                namespace: namespace.to_owned(),
+                path: path.to_string(),
+            }
+        }
+
+        pub fn from(id: String) -> Option<Self> {
+            let s = id.split_once(':')?;
+            Some(Self::new(s.0, s.1))
+        }
+
+        pub fn get_namespace(&self) -> &str {
+            &self.namespace
+        }
+
+        pub fn get_path(&self) -> &str {
+            &self.path
         }
     }
 
-    pub fn process(&self, input: bool) -> bool {
-        match self {
-            ActionResult::PASS => input,
-            ActionResult::FAIL => false,
-            ActionResult::SUCCESS => true,
+    impl ToString for Identifier {
+        fn to_string(&self) -> String {
+            format!("{}:{}", self.namespace, self.path)
         }
     }
-}
 
-pub fn default_phase() -> Identifier {
-    Identifier::new("c", "default_phase")
-}
-
-impl Default for ActionResult {
-    fn default() -> Self {
-        Self::PASS
+    pub(super) struct PhaseData<I, O> {
+        pub id: Identifier,
+        pub callbacks: Vec<Box<dyn Fn(I) -> O>>,
     }
-}
 
-struct PhaseData<I, O> {
-    pub id: Identifier,
-    pub callbacks: Vec<Box<dyn Fn(I) -> O>>,
+    pub fn default_phase() -> Identifier {
+        Identifier::new("c", "default_phase")
+    }
 }

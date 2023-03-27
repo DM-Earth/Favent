@@ -1,17 +1,26 @@
 pub mod event;
-mod util;
-
-use util::*;
-
 #[cfg(test)]
 mod tests {
     use super::event::*;
+
+    #[derive(Clone, Copy, PartialEq, Eq, Debug)]
+    pub enum ActionResult {
+        PASS,
+        FAIL,
+        SUCCESS,
+    }
+
+    impl Default for ActionResult {
+        fn default() -> Self {
+            Self::PASS
+        }
+    }
 
     #[test]
     fn event_test() {
         let mut event = Event::new_default(Box::new(event_invoker));
         event.register_default(Box::new(func));
-        event.register(Box::new(func2), &default_phase());
+        event.register(Box::new(func2), &phase::default_phase());
         println!("{:?}", event.invoke("fuckumc"));
     }
 
